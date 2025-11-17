@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 
 interface HeaderProps {
-    onNavigate: (view: 'dashboard' | 'profile' | 'admin' | 'oyasify-ai' | 'products' | 'music') => void;
+    onNavigate: (view: 'dashboard' | 'profile' | 'admin' | 'music') => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
@@ -78,9 +78,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
                                             <p className="truncate text-sm font-medium text-gray-300">{user?.nickname}</p>
                                         </div>
                                         <button onClick={() => { onNavigate('profile'); setIsDropdownOpen(false); }} className="text-gray-300 hover:bg-gray-700 hover:text-white block w-full text-left px-4 py-2 text-sm">Seu Perfil</button>
-                                        <button onClick={() => { onNavigate('products'); setIsDropdownOpen(false); }} className="text-gray-300 hover:bg-gray-700 hover:text-white block w-full text-left px-4 py-2 text-sm">Suíte Criativa de IA</button>
                                         <button onClick={() => { onNavigate('music'); setIsDropdownOpen(false); }} className="text-gray-300 hover:bg-gray-700 hover:text-white block w-full text-left px-4 py-2 text-sm">Música</button>
-                                        <button onClick={() => { onNavigate('oyasify-ai'); setIsDropdownOpen(false); }} className="text-gray-300 hover:bg-gray-700 hover:text-white block w-full text-left px-4 py-2 text-sm">Oyasify AI</button>
                                         <div className="border-t border-gray-700 my-1"></div>
                                         <button onClick={logout} className="text-red-400 hover:bg-red-500/20 hover:text-red-300 block w-full text-left px-4 py-2 text-sm">Sair</button>
                                     </div>

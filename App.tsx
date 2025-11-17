@@ -7,11 +7,9 @@ import Profile from './components/auth/Profile';
 import Header from './components/ui/Header';
 import SplashScreen from './components/ui/SplashScreen';
 import AdminPanel from './components/admin/AdminPanel';
-import OyasifyAI from './components/ai/OyasifyAI';
-import ProductsPage from './components/products/ProductsPage';
 import MusicPage from './components/music/MusicPage';
 
-type View = 'dashboard' | 'profile' | 'admin' | 'oyasify-ai' | 'products' | 'music';
+type View = 'dashboard' | 'profile' | 'admin' | 'music';
 type Page = 'splash' | 'auth' | 'app';
 
 const AppContent: React.FC = () => {
@@ -24,7 +22,7 @@ const AppContent: React.FC = () => {
         if (!loading) {
             if (user) {
                 setPage('app');
-                const nonDashboardViews = ['profile', 'admin', 'oyasify-ai', 'products', 'music'];
+                const nonDashboardViews = ['profile', 'admin', 'music'];
                 // Default view for all users, including admin, is 'dashboard'.
                 // Admin can navigate to their panel via the header.
                 if (!nonDashboardViews.includes(view)) {
@@ -84,8 +82,6 @@ const AppContent: React.FC = () => {
                         {view === 'dashboard' && <Dashboard />}
                         {view === 'profile' && <Profile />}
                         {view === 'admin' && <AdminPanel />}
-                        {view === 'oyasify-ai' && <OyasifyAI />}
-                        {view === 'products' && <ProductsPage />}
                         {view === 'music' && <MusicPage />}
                     </main>
                 </div>
