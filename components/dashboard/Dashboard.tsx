@@ -128,21 +128,16 @@ const RequestFormSection = () => {
 };
 
 const MyRequestsSection = () => {
-    const { getProductRequestsForUser, theme } = useAuth();
-    const [myRequests, setMyRequests] = useState<ProductRequest[]>([]);
-
-    useEffect(() => {
-        setMyRequests(getProductRequestsForUser());
-    }, []); // Note: This won't auto-update. A refresh mechanism would be needed for real-time.
+    const { myProductRequests, theme } = useAuth();
 
     return (
         <div className={`bg-black/20 backdrop-blur-md rounded-3xl border border-white/10 p-6 ${theme.shadow}`}>
             <h3 className="text-xl font-bold text-white mb-4">Meus Pedidos</h3>
-            {myRequests.length === 0 ? (
+            {myProductRequests.length === 0 ? (
                 <p className="text-gray-400 text-sm text-center py-4">Você ainda não fez nenhum pedido.</p>
             ) : (
                 <div className="space-y-4 max-h-80 overflow-y-auto pr-2">
-                    {myRequests.map(req => (
+                    {myProductRequests.map(req => (
                         <div key={req.id} className="bg-gray-800/50 p-4 rounded-xl">
                             <p className="text-sm text-gray-300 mb-2">"{req.requestText}"</p>
                             {req.status === 'pending' ? (

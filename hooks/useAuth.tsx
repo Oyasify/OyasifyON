@@ -22,7 +22,7 @@ interface AuthContextType {
     simulatePayment: () => Promise<{ success: boolean; message: string }>;
     // Product Requests
     createProductRequest: (requestText: string) => Promise<{ success: boolean; message: string }>;
-    getProductRequestsForUser: () => ProductRequest[];
+    myProductRequests: ProductRequest[];
     getAllPendingProductRequests: () => ProductRequest[];
     answerProductRequest: (requestId: string, links: string[]) => Promise<void>;
     getNotificationCount: () => number;
@@ -40,6 +40,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [theme, setTheme] = useState<Theme>(THEMES['Ocean Dreams']);
+    const [myProductRequests, setMyProductRequests] = useState<ProductRequest[]>([]);
 
     // --- LocalStorage Helpers ---
     const getFromStorage = <T,>(key: string, defaultValue: T): T => {
@@ -75,6 +76,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     updateUserInStorage(currentUser);
                 }
                 setUser(currentUser);
+
+                const allRequests = getFromStorage<ProductRequest[]>('oyasify_product_requests', []);
+                const userRequests = allRequests.filter(r => r.userId === currentUser.id).sort((a, b) => b.createdAt - a.createdAt);
+                setMyProductRequests(userRequests);
+
                 const userTheme = THEMES[currentUser.profile.theme] || THEMES['Ocean Dreams'];
                 setTheme(userTheme);
             }
@@ -113,6 +119,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const foundUser = users.find(u => u.email.toLowerCase() === lowercasedEmail && u.passwordHash === simpleHash(password));
         if (foundUser) {
             setUser(foundUser);
+            const allRequests = getFromStorage<ProductRequest[]>('oyasify_product_requests', []);
+            const userRequests = allRequests.filter(r => r.userId === foundUser.id).sort((a, b) => b.createdAt - a.createdAt);
+            setMyProductRequests(userRequests);
             const userTheme = THEMES[foundUser.profile.theme] || THEMES['Ocean Dreams'];
             setTheme(userTheme);
             saveToStorage('oyasify_loggedInUser', foundUser.id);
@@ -165,12 +174,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         saveToStorage('oyasify_users', [...users, newUser]);
         
         setUser(newUser);
+        setMyProductRequests([]);
         setTheme(THEMES[newUser.profile.theme]);
         saveToStorage('oyasify_loggedInUser', newUser.id);
     };
 
     const logout = () => {
         setUser(null);
+        setMyProductRequests([]);
         saveToStorage('oyasify_loggedInUser', null);
         // Force a full redirect to clear all component state and prevent data leakage between sessions.
         window.location.href = '/';
@@ -386,13 +397,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             createdAt: Date.now(),
         };
         saveToStorage('oyasify_product_requests', [...requests, newRequest]);
+        setMyProductRequests(prev => [newRequest, ...prev].sort((a,b) => b.createdAt - a.createdAt));
         return { success: true, message: "Seu pedido foi enviado! O dono irá analisar e responder em breve." };
-    };
-
-    const getProductRequestsForUser = () => {
-        if (!user) return [];
-        const requests = getFromStorage<ProductRequest[]>('oyasify_product_requests', []);
-        return requests.filter(r => r.userId === user.id).sort((a, b) => b.createdAt - a.createdAt);
     };
 
     const getAllPendingProductRequests = () => {
@@ -407,6 +413,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             requests[requestIndex].status = 'answered';
             requests[requestIndex].productLinks = links.filter(link => link.trim() !== '');
             saveToStorage('oyasify_product_requests', requests);
+
+            const answeredRequest = requests[requestIndex];
+            if (user && user.id === answeredRequest.userId) {
+                setMyProductRequests(prev =>
+                    prev.map(r => r.id === answeredRequest.id ? answeredRequest : r)
+                );
+            }
         }
     };
     
@@ -421,7 +434,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         <AuthContext.Provider value={{ 
             user, loading, theme, login, register, logout, updateProfile, checkAccess, consumeCredit, 
             requestPayment, getPendingPayments, approvePayment, rejectPayment, applyCoupon, simulatePayment,
-            createProductRequest, getProductRequestsForUser, getAllPendingProductRequests, answerProductRequest, getNotificationCount
+            createProductRequest, myProductRequests, getAllPendingProductRequests, answerProductRequest, getNotificationCount
         }}>
             {children}
         {/* FIX: Corrected typo in closing tag from Auth.Provider to AuthContext.Provider */}
